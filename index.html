@@ -14,6 +14,7 @@
       margin: 0;
       padding: 0;
       min-height: 100vh;
+      overflow-y: hidden;
     }
     .main-title {
       text-align: center;
@@ -24,6 +25,15 @@
       margin-top: 40px;
       margin-bottom: 10px;
       text-shadow: 0 2px 8px rgba(0, 105, 255, 0.08);
+    }
+    .main-subtitle {
+      text-align: center;
+      font-size: 1.08em;
+      font-weight: 400;
+      color: #6c7a89;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+      margin-top: -8px;
     }
     .container {
       display: flex;
@@ -187,7 +197,7 @@
       box-shadow: 0 2px 8px rgba(0,105,255,0.10);
       transition: background 0.2s, box-shadow 0.2s;
       letter-spacing: 0.5px;
-      margin: 0 18px 18px 18px;
+      margin: 18px 18px 18px 18px;
     }
     .submit-btn:hover {
       background: linear-gradient(90deg, #0057d9 0%, #0077cc 100%);
@@ -235,7 +245,8 @@
   </style>
 </head>
 <body>
-  <div class="main-title">Medical 3D CT Image Generator</div>
+  <div class="main-title">3D CT Medical Imagery</div>
+  <div class="main-subtitle">powered by AMD GPU Droplets</div>
   <div class="container">
     <div class="controls-card">
       <div class="tabs">
@@ -246,7 +257,7 @@
         <div class="form-group">
           <label for="bodyRegions" class="form-label">Body Region <span style="color:#7ed957">*</span></label>
           <select id="bodyRegions" class="form-select" required>
-            <option value="" disabled selected>Select a body region</option>
+            <option value="" disabled selected>Select a target body region</option>
             <option value="chest">chest</option>
             <option value="abdomen">abdomen</option>
           </select>
@@ -262,8 +273,7 @@
         <div class="form-group">
           <label for="controllableAnatomy" class="form-label">Controllable Anatomy <span style="color:#7ed957">*</span></label>
           <select id="controllableAnatomy" class="form-select" required>
-            <option value="" disabled selected>Select a controllable anatomy</option>
-            <option value="liver">liver</option>
+            <option value="liver" selected>liver</option>
             <option value="gallbladder">gallbladder</option>
             <option value="stomach">stomach</option>
             <option value="pancreas">pancreas</option>
@@ -286,7 +296,7 @@
       </div>
       <div class="resolution-section">
         <div class="section-title" style="margin-top:0;">
-          Resolution and output spacing
+          Resolution
         </div>
         <div class="row">
           <div>
@@ -304,14 +314,14 @@
             </select>
           </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="display: none;">
           <label>Output coronal and sagittal spacing</label>
           <div class="slider-group">
             <input type="range" id="corSagSlider" min="1" max="3" step="0.1" value="1.5" oninput="document.getElementById('corSagValue').value = this.value">
             <input class="slider-value" id="corSagValue" value="1.5" readonly>
           </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="display: none;">
           <label>Output axial spacing</label>
           <div class="slider-group">
             <input type="range" id="axialSlider" min="1" max="3" step="0.1" value="1.5" oninput="document.getElementById('axialValue').value = this.value">
@@ -323,7 +333,7 @@
       <div id="loadingMessage" style="display:none; color:#7ed957; text-align:center; margin-top:10px; font-weight:600;">Loading, please wait...</div>
     </div>
     <div class="viewer-panel">
-      <canvas id="gl" width="640" height="640"></canvas>
+      <canvas id="gl" width="480" height="520"></canvas>
     </div>
   </div>
   <script>
@@ -339,6 +349,7 @@
       bodyRegionContent.classList.add('active');
       anatomyScaleContent.classList.remove('active');
     });
+
     tabAnatomyScale.addEventListener('click', function() {
       tabAnatomyScale.classList.add('active');
       tabBodyRegion.classList.remove('active');
@@ -443,7 +454,7 @@
         var volumeList = [
           { url: data.nifti_url },
         ];
-        var nv = new niivue.Niivue({ isResizeCanvas: false });
+        var nv = new niivue.Niivue({ isResizeCanvas: false, isOrthogonal: true, isOrthogonalSlice: true });
         nv.attachTo("gl");
         nv.loadVolumes(volumeList);
         document.getElementById('loadingMessage').style.display = 'none';

@@ -54,10 +54,6 @@ def generate_nifti_file(body_region, anatomy, xy_dim, z_dim, cor_sag_spacing, ax
     session = requests.Session()
     try:
         response = session.post(invoke_url, headers=headers, json=payload)
-        try:
-            print(response.json())
-        except Exception:
-            print("Response is not JSON:", response.content)
         response.raise_for_status()
         while response.status_code == 202:
             req_id = response.headers.get("NVCF-REQID")
@@ -85,16 +81,3 @@ def generate_nifti_file(body_region, anatomy, xy_dim, z_dim, cor_sag_spacing, ax
                 return result + "/" + fname
 
     raise FileNotFoundError("No file starting with 'sample' and ending with 'image.nii.gz' found in the extracted results.")
-
-
-# if response.status_code != 200:
-#     print(f"Error with code {response.status_code}.")
-#     exit()
-
-# with tempfile.TemporaryDirectory() as temp_dir:
-#     z = zipfile.ZipFile(io.BytesIO(response.content))
-#     z.extractall(temp_dir)
-#     os.makedirs(result)
-#     shutil.move(temp_dir, f"{result}")
-
-# print("Success!")
