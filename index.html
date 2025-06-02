@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical 3D CT Image Generator</title>
+  <script src="https://unpkg.com/@niivue/niivue@0.32.0/dist/niivue.umd.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+      color: #f4f4f4;
+      font-family: 'Inter', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    .main-title {
+      text-align: center;
+      font-size: 2.2em;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #7ed957;
+      margin-top: 40px;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+    }
+    .container {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 0;
+      gap: 48px;
+      min-height: 80vh;
+    }
+    .controls-card {
+      background: #232526;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+      padding: 0 0 32px 0;
+      min-width: 460px;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1.5px solid #2d3a4d;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #333;
+      align-items: center;
+      background: #232526;
+      border-radius: 18px 18px 0 0;
+      overflow: hidden;
+      margin-bottom: 0;
+    }
+    .tab {
+      padding: 18px 36px 14px 36px;
+      cursor: pointer;
+      color: #bdbdbd;
+      font-weight: 600;
+      border: none;
+      background: none;
+      outline: none;
+      transition: color 0.2s, border-bottom 0.2s, background 0.2s;
+      font-size: 1.15em;
+      border-radius: 18px 18px 0 0;
+    }
+    .tab.active {
+      color: #fff;
+      border-bottom: 3px solid #7ed957;
+      background: #232526;
+      box-shadow: 0 2px 8px rgba(126,217,87,0.04);
+    }
+    .tab:not(.active):hover {
+      background: #2d3a4d;
+      color: #fff;
+    }
+    .tab-content {
+      padding: 32px 32px 0 32px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      animation: fadeIn 0.4s;
+    }
+    .tab-content.active {
+      display: flex;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px);}
+      to { opacity: 1; transform: none;}
+    }
+    .section-title {
+      font-size: 1.13em;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .form-group {
+      margin-bottom: 2px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #bdbdbd;
+      font-size: 1.03em;
+      font-weight: 500;
+    }
+    .tooltip {
+      margin-left: 8px;
+      color: #7ed957;
+      cursor: pointer;
+      font-size: 1em;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #232526;
+      border: 1px solid #7ed957;
+      transition: background 0.2s, color 0.2s;
+      position: relative;
+    }
+    .tooltip:hover {
+      background: #7ed957;
+      color: #232526;
+    }
+    .form-select {
+      background: #181a1b;
+      color: #e0e0e0;
+      border: 1.5px solid #333;
+      border-radius: 8px;
+      font-size: 1.05em;
+      padding: 12px 14px;
+      transition: border 0.2s;
+    }
+    .form-select:focus {
+      border: 1.5px solid #7ed957;
+      box-shadow: 0 0 0 2px #7ed95733;
+    }
+    .form-select option[disabled][selected] {
+      color: #888;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .row > div {
+      flex: 1;
+    }
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    input[type="range"] {
+      flex: 1;
+      accent-color: #7ed957;
+      height: 4px;
+    }
+    .slider-value {
+      width: 48px;
+      text-align: center;
+      background: #232526;
+      border-radius: 8px;
+      border: 1.5px solid #333;
+      color: #fff;
+      font-size: 1.05em;
+      padding: 7px 0;
+    }
+    .submit-btn {
+      background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 0;
+      font-size: 1.13em;
+      cursor: pointer;
+      margin-top: 16px;
+      box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+      transition: background 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.5px;
+      margin-left: 18px;
+      margin-right: 18px;
+      margin-top: 18px;
+    }
+    .submit-btn:hover {
+      background: linear-gradient(90deg, #1565c0 0%, #1e88e5 100%);
+      box-shadow: 0 4px 16px rgba(126,217,87,0.10);
+    }
+    .submit-btn:disabled {
+      background: #444 !important;
+      color: #bbb !important;
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .viewer-panel {
+      background: #232a36;
+      border-radius: 18px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.25);
+      padding: 28px 18px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 380px;
+      min-height: 360px;
+      border: 1.5px solid #2d3a4d;
+    }
+    .viewer-title {
+      color: #90caf9;
+      font-size: 1.18em;
+      font-weight: 600;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+    }
+    @media (max-width: 900px) {
+      .container { flex-direction: column; align-items: center; gap: 32px; }
+      .viewer-panel { min-width: 0; }
+    }
+    .resolution-section {
+      margin-top: 35px;
+      margin-left: 35px;
+      margin-right: 35px;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-title">Medical 3D CT Image Generator</div>
+  <div class="container">
+    <div class="controls-card">
+      <div class="tabs">
+        <button class="tab active" id="tabBodyRegion">Body Region</button>
+        <button class="tab" id="tabAnatomyScale">Anatomy Scale</button>
+      </div>
+      <div class="tab-content active" id="bodyRegionContent">
+        <div class="form-group">
+          <label for="bodyRegions" class="form-label">Body Region <span style="color:#7ed957">*</span></label>
+          <select id="bodyRegions" class="form-select" required>
+            <option value="" disabled selected>Select a body region</option>
+            <option value="chest">chest</option>
+            <option value="abdomen">abdomen</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="anatomies" class="form-label">Anatomies <span style="color:#7ed957">*</span></label>
+          <select id="anatomies" class="form-select" required>
+            <option value="" disabled selected>Select a body region first</option>
+          </select>
+        </div>
+      </div>
+      <div class="tab-content" id="anatomyScaleContent">
+        <div class="form-group">
+          <label for="controllableAnatomy" class="form-label">Controllable Anatomy <span style="color:#7ed957">*</span></label>
+          <select id="controllableAnatomy" class="form-select" required>
+            <option value="" disabled selected>Select a controllable anatomy</option>
+            <option value="liver">liver</option>
+            <option value="gallbladder">gallbladder</option>
+            <option value="stomach">stomach</option>
+            <option value="pancreas">pancreas</option>
+            <option value="colon">colon</option>
+            <option value="hepatic tumor">hepatic tumor</option>
+            <option value="bone lesion">bone lesion</option>
+            <option value="lung tumor">lung tumor</option>
+            <option value="colon cancer primaries">colon cancer primaries</option>
+            <option value="pancreatic tumor">pancreatic tumor</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="scale" class="form-label">Scale</label>
+          <select id="scale" class="form-select" required>
+            <option value="0.1">0.1</option>
+            <option value="0.5">0.5</option>
+            <option value="1.0" selected>1.0</option>
+          </select>
+        </div>
+      </div>
+      <div class="resolution-section">
+        <div class="section-title" style="margin-top:0;">
+          Resolution and output spacing
+        </div>
+        <div class="row">
+          <div>
+            <label for="xyDim">X,Y Dimensions</label>
+            <select id="xyDim" class="form-select">
+              <option value="256" selected>256</option>
+              <option value="512">512</option>
+            </select>
+          </div>
+          <div>
+            <label for="zDim">Z Dimension</label>
+            <select id="zDim" class="form-select">
+              <option value="256" selected>256</option>
+              <option value="128">128</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Output coronal and sagittal spacing</label>
+          <div class="slider-group">
+            <input type="range" id="corSagSlider" min="1" max="3" step="0.1" value="1.5" oninput="document.getElementById('corSagValue').value = this.value">
+            <input class="slider-value" id="corSagValue" value="1.5" readonly>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Output axial spacing</label>
+          <div class="slider-group">
+            <input type="range" id="axialSlider" min="1" max="3" step="0.1" value="1.5" oninput="document.getElementById('axialValue').value = this.value">
+            <input class="slider-value" id="axialValue" value="1.5" readonly>
+          </div>
+        </div>
+      </div>
+      <button class="submit-btn" id="submitBtn">Submit</button>
+      <div id="loadingMessage" style="display:none; color:#7ed957; text-align:center; margin-top:10px; font-weight:600;">Loading, please wait...</div>
+    </div>
+    <div class="viewer-panel">
+      <canvas id="gl" width="640" height="640"></canvas>
+    </div>
+  </div>
+  <script>
+    // Tab switching logic
+    const tabBodyRegion = document.getElementById('tabBodyRegion');
+    const tabAnatomyScale = document.getElementById('tabAnatomyScale');
+    const bodyRegionContent = document.getElementById('bodyRegionContent');
+    const anatomyScaleContent = document.getElementById('anatomyScaleContent');
+
+    tabBodyRegion.addEventListener('click', function() {
+      tabBodyRegion.classList.add('active');
+      tabAnatomyScale.classList.remove('active');
+      bodyRegionContent.classList.add('active');
+      anatomyScaleContent.classList.remove('active');
+    });
+    tabAnatomyScale.addEventListener('click', function() {
+      tabAnatomyScale.classList.add('active');
+      tabBodyRegion.classList.remove('active');
+      anatomyScaleContent.classList.add('active');
+      bodyRegionContent.classList.remove('active');
+    });
+
+    // Disable submit button by default
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+
+    // Dynamic Anatomies dropdown logic
+    const bodyRegionsSelect = document.getElementById('bodyRegions');
+    const anatomiesSelect = document.getElementById('anatomies');
+
+    bodyRegionsSelect.addEventListener('change', function() {
+      const selected = bodyRegionsSelect.value;
+      anatomiesSelect.innerHTML = '';
+      submitBtn.disabled = true; // Reset submit button when body region changes
+      if (selected === 'chest') {
+        anatomiesSelect.innerHTML = `
+          <option value="aorta">aorta</option>
+          <option value="inferior vena cava">inferior vena cava</option>
+          <option value="portal vein and splenic vein">portal vein and splenic vein</option>
+          <option value="left lung upper lobe">left lung upper lobe</option>
+          <option value="left lung lower lobe">left lung lower lobe</option>
+          <option value="right lung upper lobe">right lung upper lobe</option>
+          <option value="right lung middle lobe">right lung middle lobe</option>
+          <option value="right lung lower lobe">right lung lower lobe</option>
+          <option value="left iliac artery">left iliac artery</option>
+          <option value="right iliac artery">right iliac artery</option>
+          <option value="left iliac vena">left iliac vena</option>
+          <option value="right iliac vena">right iliac vena</option>
+        `;
+      } else if (selected === 'abdomen') {
+        anatomiesSelect.innerHTML = `
+          <option value="liver">liver</option>
+          <option value="spleen">spleen</option>
+          <option value="pancreas">pancreas</option>
+          <option value="right kidney">right kidney</option>
+          <option value="right adrenal gland">right adrenal gland</option>
+          <option value="left adrenal gland">left adrenal gland</option>
+          <option value="gallbladder">gallbladder</option>
+          <option value="esophagus">esophagus</option>
+          <option value="stomach">stomach</option>
+          <option value="duodenum">duodenum</option>
+          <option value="left kidney">left kidney</option>
+          <option value="bladder">bladder</option>
+          <option value="small bowel">small bowel</option>
+          <option value="hepatic vessel">hepatic vessel</option>
+          <option value="colon">colon</option>
+        `;
+      } else {
+        anatomiesSelect.innerHTML = '<option value="" disabled selected>Select an anatomy</option>';
+      }
+    });
+
+    // Enable submit button only if a valid bodyRegions is selected
+    bodyRegions.addEventListener('change', function() {
+      if (bodyRegions.value && bodyRegions.value !== '') {
+        submitBtn.disabled = false;
+      } else {
+        submitBtn.disabled = true;
+      }
+    });
+
+    // Submit button logic
+    document.getElementById('submitBtn').addEventListener('click', function() {
+      // Show loading message
+      document.getElementById('loadingMessage').style.display = 'block';
+      // Get selected body regions and anatomies
+      const bodyRegions = Array.from(document.getElementById('bodyRegions').selectedOptions).map(opt => opt.value);
+      const anatomies = Array.from(document.getElementById('anatomies').selectedOptions).map(opt => opt.value);
+      const xyDim = document.getElementById('xyDim').value;
+      const zDim = document.getElementById('zDim').value;
+      const corSagSpacing = parseFloat(document.getElementById('corSagSlider').value);
+      const axialSpacing = parseFloat(document.getElementById('axialSlider').value);
+      const controllableAnatomy = document.getElementById('controllableAnatomy') ? document.getElementById('controllableAnatomy').value : null;
+      const scale = document.getElementById('scale') ? document.getElementById('scale').value : null;
+
+      // Build payload
+      const payload = {
+        body_region: bodyRegions,
+        anatomy: anatomies,
+        xy_dim: xyDim,
+        z_dim: zDim,
+        cor_sag_spacing: corSagSpacing,
+        axial_spacing: axialSpacing,
+        controllable_anatomy: controllableAnatomy,
+        scale: scale
+      };
+
+      // Call backend to generate image
+      fetch('http://127.0.0.1:5000/generate_nifti', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Load NIfTI in viewer
+        var volumeList = [
+          { url: data.nifti_url },
+        ];
+        var nv = new niivue.Niivue({ isResizeCanvas: false });
+        nv.attachTo("gl");
+        nv.loadVolumes(volumeList);
+        document.getElementById('loadingMessage').style.display = 'none';
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        document.getElementById('loadingMessage').style.display = 'none';
+      });
+    });
+
+    const xyDimSelect = document.getElementById('xyDim');
+    const corSagSlider = document.getElementById('corSagSlider');
+    const axialSlider = document.getElementById('axialSlider');
+    const corSagValue = document.getElementById('corSagValue');
+    const axialValue = document.getElementById('axialValue');
+
+    xyDimSelect.addEventListener('change', function() {
+      if (xyDimSelect.value === '512') {
+        corSagSlider.value = 1;
+        axialSlider.value = 1;
+        corSagValue.value = 1;
+        axialValue.value = 1;
+        corSagSlider.disabled = true;
+        axialSlider.disabled = true;
+      } else {
+        corSagSlider.value = 1.5;
+        axialSlider.value = 1.5;
+        corSagValue.value = 1.5;
+        axialValue.value = 1.5;
+        corSagSlider.disabled = false;
+        axialSlider.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

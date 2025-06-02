@@ -1,0 +1,7 @@
+flask
+requests
+nibabel
+numpy
+matplotlib
+flask-cors
+python-dotenv
